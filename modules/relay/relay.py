@@ -12,19 +12,21 @@ CONFIG = {
     "DEVICES" : [
         {'name' : 'relay1', 'typ' : 'c'},
         {'name' : 'relay2', 'typ' : 'c'},
-        {'name' : 'relay3', 'typ' : 'c'},
-        {'name' : 'relay4', 'typ' : 'c'},
-        {'name' : 'relay5', 'typ' : 'c'}
+#        {'name' : 'relay3', 'typ' : 'c'},
+#        {'name' : 'relay4', 'typ' : 'c'},
+#        {'name' : 'relay5', 'typ' : 'c'}
     ]
 }
 
 #This function is called before initalization from the runtime environment
 def pre_initialize():
+    pass
     print("Module will be initialized")
 
 #This function will be called immediatly after the initalization. It gets the devices parameter
 def post_initialize(devices):
     print("Module has been initialized")
+    devices[0].add_read_watch()
 
 #This function is for starting the logic
 def on_read(device, value):
