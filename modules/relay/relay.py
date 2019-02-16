@@ -9,9 +9,11 @@ CONFIG = {
     "FOLDER" : "relay",
 
     #These files will get allocated upon initalization
+    #you can insert anything you want in attrs attribute
+    #it will be given to on_read or on_write function
     "DEVICES" : [
-        {'name' : 'relay1', 'typ' : 'c'},
-        {'name' : 'relay2', 'typ' : 'c'},
+        {'name' : 'relay1', 'size' : 1, 'attrs' : dict()},
+        {'name' : 'relay2', 'size' : 1, 'attrs' : dict()}
 #        {'name' : 'relay3', 'typ' : 'c'},
 #        {'name' : 'relay4', 'typ' : 'c'},
 #        {'name' : 'relay5', 'typ' : 'c'}
