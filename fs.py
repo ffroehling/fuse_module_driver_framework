@@ -175,8 +175,8 @@ class Abstraction(LoggingMixIn, Operations):
         return dict(f_bsize=512, f_blocks=4096, f_bavail=2048)
 
     #As no real write happens, no need todo anything
-    #def truncate(self, path, length, fh=None):
-    #    pass
+    def truncate(self, path, length, fh=None):
+        pass
 
     def utimens(self, path, times=None):
         now = time()
@@ -237,7 +237,7 @@ class Filesystem:
         if not self.fuse == None:
             return False
 
-        self.fuse = FUSE(self.mem, self.mount, foreground=False, allow_other=True)
+        self.fuse = FUSE(self.mem, self.mount, foreground=True, allow_other=True)
 
     #stops fuse
     def stop(self):
