@@ -1,1 +1,1 @@
-BASEPATH = '/dev'
+BASEPATH = '/dev/test'

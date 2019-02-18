@@ -13,11 +13,8 @@ from time import time
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 from pprint import pprint
 
-
-
 if not hasattr(__builtins__, 'bytes'):
     bytes = str
-
 
 class Abstraction(LoggingMixIn, Operations):
 
@@ -26,7 +23,6 @@ class Abstraction(LoggingMixIn, Operations):
 
         if module in self.modules:
             #TODO: Log here that the module already exists
-            print("Module already loaded")
             return False
 
         #first add the folder
@@ -113,31 +109,6 @@ class Abstraction(LoggingMixIn, Operations):
             st_atime=now,
             st_nlink=2)
 
-    def chmod(self, path, mode):
-        raise FuseOSError(EPERM)
-#        self.files[path]['st_mode'] &= 0o770000
-#        self.files[path]['st_mode'] |= mode
-#        return 0
-#
-    def chown(self, path, uid, gid):
-        raise FuseOSError(EPERM)
-        #self.files[path]['st_uid'] = uid
-        #self.files[path]['st_gid'] = gid
-
-    def create(self, path, mode):
-        raise FuseOSError(EPERM)
-
-#        self.files[path] = dict(
-#            st_mode=(S_IFREG | mode),
-#            st_nlink=1,
-#            st_size=0,
-#            st_ctime=time(),
-#            st_mtime=time(),
-#            st_atime=time())
-#
-#        self.fd += 1
-#        return self.fd
-#
     def getattr(self, path, fh=None):
         if path not in self.files:
             raise FuseOSError(ENOENT)
@@ -156,18 +127,6 @@ class Abstraction(LoggingMixIn, Operations):
         attrs = self.files[path].get('attrs', {})
         return attrs.keys()
 
-    def mkdir(self, path, mode):
-        raise FuseOSError(EPERM)
-#        self.files[path] = dict(
-#            st_mode=(S_IFDIR | mode),
-#            st_nlink=2,
-#            st_size=0,
-#            st_ctime=time(),
-#            st_mtime=time(),
-#            st_atime=time())
-#
-#        self.files['/']['st_nlink'] += 1
-#
     def open(self, path, flags):
         self.fd += 1
         return self.fd
@@ -188,7 +147,6 @@ class Abstraction(LoggingMixIn, Operations):
         appended = []
 
         for f in self.files:
-            #print(self.files[f])
             if path in f:
                 x = f.replace(path,'', 1)
 
@@ -198,7 +156,6 @@ class Abstraction(LoggingMixIn, Operations):
                 x = x.split('/')[0]
                 if len(x) > 0 and x not in appended:
                     l[x] = f
-                    #result.append(dict(x = self.files[f]))
                     appended.append(x)
 
         return l
@@ -214,46 +171,12 @@ class Abstraction(LoggingMixIn, Operations):
         except KeyError:
             pass        # Should return ENOATTR
 
-    def rename(self, old, new):
-        raise FuseOSError(EPERM)
-        #self.data[new] = self.data.pop(old)
-        #self.files[new] = self.files.pop(old)
-
-    def rmdir(self, path):
-        raise FuseOSError(EPERM)
-        # with multiple level support, need to raise ENOTEMPTY if contains any files
-        #self.files.pop(path)
-        #self.files['/']['st_nlink'] -= 1
-
-    def setxattr(self, path, name, value, options, position=0):
-        raise FuseOSError(EPERM)
-        # Ignore options
-        #attrs = self.files[path].setdefault('attrs', {})
-        #attrs[name] = value
-
     def statfs(self, path):
         return dict(f_bsize=512, f_blocks=4096, f_bavail=2048)
 
-    def symlink(self, target, source):
-        raise FuseOSError(EPERM)
-#        self.files[target] = dict(
-#            st_mode=(S_IFLNK | 0o777),
-#            st_nlink=1,
-#            st_size=len(source))
-#
-#        self.data[target] = source
-#
-    def truncate(self, path, length, fh=None):
-        pass
-        # make sure extending the file fills in zero bytes
-        #self.data[path] = self.data[path][:length].ljust(
-            #length, '\x00'.encode('ascii'))
-        #self.files[path]['st_size'] = length
-
-    def unlink(self, path):
-        raise FuseOSError(EPERM)
-        #self.data.pop(path)
-        #self.files.pop(path)
+    #As no real write happens, no need todo anything
+    #def truncate(self, path, length, fh=None):
+    #    pass
 
     def utimens(self, path, times=None):
         now = time()
@@ -262,10 +185,6 @@ class Abstraction(LoggingMixIn, Operations):
         self.files[path]['st_mtime'] = mtime
 
     def write(self, path, data, offset, fh):
-        print(data)
-        print(offset)
-        print(fh)
-
         #get module
         module, device = self.get_dm_for_path(path)
         
@@ -277,26 +196,52 @@ class Abstraction(LoggingMixIn, Operations):
         return module.on_write(device, data)
 
         return 5
+
+    #The following methods are not allowed in the filesystem
+    def unlink(self, path):
+        raise FuseOSError(EPERM)
+
+    def chmod(self, path, mode):
+        raise FuseOSError(EPERM)
+
+    def chown(self, path, uid, gid):
+        raise FuseOSError(EPERM)
+
+    def create(self, path, mode):
+        raise FuseOSError(EPERM)
+
+    def symlink(self, target, source):
+        raise FuseOSError(EPERM)
+
+    def rmdir(self, path):
+        raise FuseOSError(EPERM)
+
+    def setxattr(self, path, name, value, options, position=0):
+        raise FuseOSError(EPERM)
+
+    def rename(self, old, new):
+        raise FuseOSError(EPERM)
+
+    def mkdir(self, path, mode):
+        raise FuseOSError(EPERM)
+
 class Filesystem:
     def __init__(self, mount):
         self.mount = mount
         self.mem = Abstraction()
         self.fuse = None
-        logging.basicConfig(level=logging.DEBUG)
+        #logging.basicConfig(level=logging.DEBUG)
 
     #starts mounting the file system in userspace
     def start(self):
         if not self.fuse == None:
-            print("Fuse is already started") #or whatever log system
             return False
 
-        self.fuse = FUSE(self.mem, self.mount, foreground=True, allow_other=True)
-
+        self.fuse = FUSE(self.mem, self.mount, foreground=False, allow_other=True)
 
     #stops fuse
     def stop(self):
         if self.fuse == None:
-            print("Fuse is not started") #or whatever log system
             return False
 
         del self.fuse
@@ -304,14 +249,3 @@ class Filesystem:
     #adds a module
     def add_module(self, module):
         self.mem.add_module(module)
-
-#if __name__ == '__main__':
-#    import argparse
-#    parser = argparse.ArgumentParser()
-#    parser.add_argument('mount')
-#    args = parser.parse_args()
-#
-#    logging.basicConfig(level=logging.DEBUG)
-#    mem = Memory()
-#    mem.add_file("test")
-#    fuse = FUSE(mem, args.mount, foreground=True, allow_other=True)

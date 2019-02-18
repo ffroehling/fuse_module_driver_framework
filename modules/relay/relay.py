@@ -12,8 +12,8 @@ CONFIG = {
     #you can insert anything you want in attrs attribute
     #it will be given to on_read or on_write function
     "DEVICES" : [
-        {'name' : 'relay1', 'size' : 1, 'attrs' : dict(gpio : '/sys/class/gpio/A23')},
-        {'name' : 'relay1', 'size' : 1, 'attrs' : dict(gpio : '/sys/class/gpio/A24')},
+        {'name' : 'relay1', 'size' : 1, 'attrs' : dict(gpio = '/sys/class/gpio/A23')},
+        {'name' : 'relay1', 'size' : 1, 'attrs' : dict(gpio = '/sys/class/gpio/A24')},
     ]
 }
 
