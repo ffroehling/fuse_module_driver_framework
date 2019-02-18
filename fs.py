@@ -32,8 +32,15 @@ class Memory(LoggingMixIn, Operations):
         #first add the folder
         #self.add_folder(module.CONFIG['FOLDER'])
         #self.add_file("asdf", 3)
-        self.add_folder("test")
-        self.add_file("test/asdf", 3)
+        self.add_folder("test1")
+        self.add_folder("test2")
+        self.add_folder("test3")
+        self.add_file("test1/a", 3)
+        self.add_file("test2/a", 3)
+        self.add_file("test2/b", 3)
+        self.add_file("test3/a", 3)
+        self.add_file("test3/b", 3)
+        self.add_file("test3/c", 3)
 
         #now add all the files
         #for device in module.CONFIG['DEVICES']:
@@ -151,18 +158,24 @@ class Memory(LoggingMixIn, Operations):
         print("readdir")
         print(path)
 
-        result =  ['.', '..']
+        l = {}
         appended = []
 
         for f in self.files:
+            #print(self.files[f])
             if path in f:
                 x = f.replace(path,'', 1)
+
+                if x.startswith('/'):
+                    x = x[1:]
+
                 x = x.split('/')[0]
                 if len(x) > 0 and x not in appended:
-                    result.append(f[1:])
+                    l[x] = f
+                    #result.append(dict(x = self.files[f]))
                     appended.append(x)
 
-        return result
+        return l
         
 
         #return ['.', '..'] + [x[1:] for x in self.files if x != '/']
