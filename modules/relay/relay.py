@@ -12,23 +12,25 @@ CONFIG = {
     #you can insert anything you want in attrs attribute
     #it will be given to on_read or on_write function
     "DEVICES" : [
-        {'name' : 'relay1', 'size' : 16, 'attrs' : dict()},
-        {'name' : 'relay2', 'size' : 16, 'attrs' : dict()}
+        {'name' : 'relay1', 'size' : 1, 'attrs' : dict(gpio : '/sys/class/gpio/A23')},
+        {'name' : 'relay1', 'size' : 1, 'attrs' : dict(gpio : '/sys/class/gpio/A24')},
     ]
 }
 
 #This function is for starting the logic
 def on_read(device, size, offset):
-    print("Module read")
-    print(device)
-    #print(device[0])
-    #print(device[1])
+    attr = device[1]
+    with open(attr.gpio, 'rb') as f:
+        data = f.read()
+        return data
 
-    return b'i have been read'
+    return b'0'
 
 def on_write(device, value):
-    print("written")
-    print(value)
+    attr = device[1]
+    with open(attr.gpio, 'wb') as f:
+        f.write(value)
+        return data
 
     return len(value)
 
