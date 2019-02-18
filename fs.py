@@ -19,7 +19,7 @@ if not hasattr(__builtins__, 'bytes'):
     bytes = str
 
 
-class Memory(LoggingMixIn, Operations):
+class Abstraction(LoggingMixIn, Operations):
 
     def add_module(self, module):
         now = time()
@@ -276,10 +276,11 @@ class Memory(LoggingMixIn, Operations):
 
         return module.on_write(device, data)
 
+        return 5
 class Filesystem:
     def __init__(self, mount):
         self.mount = mount
-        self.mem = Memory()
+        self.mem = Abstraction()
         self.fuse = None
         logging.basicConfig(level=logging.DEBUG)
 
