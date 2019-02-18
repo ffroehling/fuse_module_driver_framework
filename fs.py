@@ -30,22 +30,16 @@ class Memory(LoggingMixIn, Operations):
             return False
 
         #first add the folder
-        #self.add_folder(module.CONFIG['FOLDER'])
-        #self.add_file("asdf", 3)
-        self.add_folder("test1")
-        self.add_folder("test2")
-        self.add_folder("test3")
-        self.add_file("test1/a", 3)
-        self.add_file("test2/a", 3)
-        self.add_file("test2/b", 3)
-        self.add_file("test3/a", 3)
-        self.add_file("test3/b", 3)
-        self.add_file("test3/c", 3)
+        self.add_folder(module.CONFIG['FOLDER'])
 
         #now add all the files
-        #for device in module.CONFIG['DEVICES']:
-            #self.add_file("%s/%s" % (module.CONFIG['FOLDER'], device['name']), device['size'])
+        for device in module.CONFIG['DEVICES']:
+            self.add_file("%s/%s" % (module.CONFIG['FOLDER'], device['name']), device['size'])
 
+        #Add to our list
+        self.modules.append(module)
+
+    #Adds a folder in the virtual file system
     def add_folder(self, name):
         now = time()
         self.files['/' + name ] = dict(
@@ -55,6 +49,7 @@ class Memory(LoggingMixIn, Operations):
             st_atime=now,
             st_nlink=2)
 
+    #Adds a file in the virtual file system
     def add_file(self, name, size):
         now = time()
         self.files['/' + name] = dict(
@@ -64,6 +59,45 @@ class Memory(LoggingMixIn, Operations):
             st_atime=now,
             st_nlink=2,
             st_size=size)
+
+    def get_module_for_path(self, path):
+        if path == None:
+            return None
+
+        try:
+            #get specific module 
+            module = path.split('/')[1]
+            
+            for m in self.modules:
+                if m.CONFIG['FOLDER'] == module:
+                    return m
+
+            return None
+
+        except Exception as e:
+            return None
+
+    def get_device_for_path(self, module, path):
+        if path == None or module == None:
+            return (None, None)
+
+        try:
+            #get specific module 
+            device = path.split('/')[2]
+
+            for d in module.CONFIG['DEVICES']:
+                if device == d['name']:
+                    return (d['name'], d['attrs'])
+            
+            return (None, None)
+        except Exception as e:
+            return (None, None)
+
+    def get_dm_for_path(self, path):
+        module = self.get_module_for_path(path)
+        device = self.get_device_for_path(module, path)
+
+        return (module, device)
 
     def __init__(self):
         self.files = {}
@@ -105,7 +139,6 @@ class Memory(LoggingMixIn, Operations):
 #        return self.fd
 #
     def getattr(self, path, fh=None):
-        print("Path in getattr: %s" % path)
         if path not in self.files:
             raise FuseOSError(ENOENT)
 
@@ -140,24 +173,17 @@ class Memory(LoggingMixIn, Operations):
         return self.fd
 
     def read(self, path, size, offset, fh):
-        #pdb.set_trace()
-#        print(path)
-#        print("read")
-#        print(offset)
-#        print(size)
-#        with open("/tmp/bla", "w") as f:
-#            f.write("Path: %s\n" % path)
-#            f.write("Offset: %d\n" % offset)
-#            f.write("Size: %d\n" % size)
-#
-        return b"asfasdasdfasdf"
-        #return self.data[path][offset:offset + size]
+        #get module
+        module, device = self.get_dm_for_path(path)
+        
+        #Raise error on any failure
+        if module is None or device is None:
+            raise FuseOSError(ENOENT)
+            return b''
+
+        return module.on_read(device, size, offset)
 
     def readdir(self, path, fh):
-        #TODO: Handle this here
-        print("readdir")
-        print(path)
-
         l = {}
         appended = []
 
@@ -176,13 +202,8 @@ class Memory(LoggingMixIn, Operations):
                     appended.append(x)
 
         return l
-        
-
-        #return ['.', '..'] + [x[1:] for x in self.files if x != '/']
-        return ['.', '..'] + [x[1:] for x in self.files if x == path]
 
     def readlink(self, path):
-        #TODO: Handle this here
         return self.data[path]
 
     def removexattr(self, path, name):
@@ -205,7 +226,6 @@ class Memory(LoggingMixIn, Operations):
         #self.files['/']['st_nlink'] -= 1
 
     def setxattr(self, path, name, value, options, position=0):
-        print("setxattr")
         raise FuseOSError(EPERM)
         # Ignore options
         #attrs = self.files[path].setdefault('attrs', {})
@@ -224,10 +244,11 @@ class Memory(LoggingMixIn, Operations):
 #        self.data[target] = source
 #
     def truncate(self, path, length, fh=None):
+        pass
         # make sure extending the file fills in zero bytes
-        self.data[path] = self.data[path][:length].ljust(
-            length, '\x00'.encode('ascii'))
-        self.files[path]['st_size'] = length
+        #self.data[path] = self.data[path][:length].ljust(
+            #length, '\x00'.encode('ascii'))
+        #self.files[path]['st_size'] = length
 
     def unlink(self, path):
         raise FuseOSError(EPERM)
@@ -241,18 +262,19 @@ class Memory(LoggingMixIn, Operations):
         self.files[path]['st_mtime'] = mtime
 
     def write(self, path, data, offset, fh):
-        print("written to file")
-        self.data[path] = (
-            # make sure the data gets inserted at the right offset
-            self.data[path][:offset].ljust(offset, '\x00'.encode('ascii'))
-            + data
-            # and only overwrites the bytes that data is replacing
-            + self.data[path][offset + len(data):])
-        self.files[path]['st_size'] = len(self.data[path])
-        return len(data)
+        print(data)
+        print(offset)
+        print(fh)
 
-#variables
+        #get module
+        module, device = self.get_dm_for_path(path)
+        
+        #Raise error on any failure
+        if module is None or device is None:
+            raise FuseOSError(ENOENT)
+            return b''
 
+        return module.on_write(device, data)
 
 class Filesystem:
     def __init__(self, mount):

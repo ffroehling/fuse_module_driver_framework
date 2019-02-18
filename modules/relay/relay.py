@@ -12,8 +12,8 @@ CONFIG = {
     #you can insert anything you want in attrs attribute
     #it will be given to on_read or on_write function
     "DEVICES" : [
-        {'name' : 'relay1', 'size' : 1, 'attrs' : dict()},
-        {'name' : 'relay2', 'size' : 1, 'attrs' : dict()}
+        {'name' : 'relay1', 'size' : 16, 'attrs' : dict()},
+        {'name' : 'relay2', 'size' : 16, 'attrs' : dict()}
 #        {'name' : 'relay3', 'typ' : 'c'},
 #        {'name' : 'relay4', 'typ' : 'c'},
 #        {'name' : 'relay5', 'typ' : 'c'}
@@ -31,11 +31,19 @@ def post_initialize(devices):
     devices[0].add_read_watch()
 
 #This function is for starting the logic
-def on_read(device, value):
-    print("Module started")
+def on_read(device, size, offset):
+    print("Module read")
+    print(device)
+    #print(device[0])
+    #print(device[1])
+
+    return b'i have been read'
 
 def on_write(device, value):
-    print("Module started")
+    print("written")
+    print(value)
+
+    return len(value)
 
 #This function will be called right before runtime stops the module. Clean up your resources here
 def pre_stop():
