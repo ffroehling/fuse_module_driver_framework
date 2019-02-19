@@ -12,8 +12,8 @@ CONFIG = {
     #you can insert anything you want in attrs attribute
     #it will be given to on_read or on_write function
     "DEVICES" : [
-        {'name' : 'relay1', 'size' : 1, 'attrs' : { 'allocate' : 23, 'direction' : 'out', 'path' : '/sys/class/gpio/pioA23/'}},
-        {'name' : 'relay2', 'size' : 1, 'attrs' : { 'allocate' : 24, 'direction' : 'out', 'path' : '/sys/class/gpio/pioA24/'}}
+        {'name' : 'relay1', 'size' : 2, 'attrs' : { 'allocate' : 23, 'direction' : 'out', 'path' : '/sys/class/gpio/pioA23/'}},
+        {'name' : 'relay2', 'size' : 2, 'attrs' : { 'allocate' : 24, 'direction' : 'out', 'path' : '/sys/class/gpio/pioA24/'}}
     ]
 }
 
@@ -27,20 +27,22 @@ def init():
 
         #set direction
         with open("%s/direction" % attrs['path'], "wb") as f:
-            f.write(b"%s\n" % attrs['direction'])
+            f.write(b"%s\n" % attrs['direction'].encode('utf-8'))
 
 #This function is for starting the logic
 def on_read(device, size, offset):
     attr = device[1]
-    with open(attr['gpio'], 'rb') as f:
+
+    with open("%s/value" % attr['path'], 'rb') as f:
         data = f.read()
         return data
+        #return b"\n%s" % data
 
-    return b'0'
+    return b'0\n'
 
 def on_write(device, value):
     attr = device[1]
-    with open(attr['gpio'], 'wb') as f:
+    with open("%s/value" % attr['path'], 'wb') as f:
         f.write(value)
 
     return len(value)

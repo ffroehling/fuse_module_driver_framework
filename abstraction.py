@@ -12,7 +12,7 @@ def load_modules():
         #module = Module(m.module)
         #runtime_modules.append(module)
         #module.init()
-        m.init()
+        m.module.init()
         runtime_modules.append(m.module)
 
 #first load the modules
