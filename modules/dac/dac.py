@@ -14,8 +14,8 @@ CONFIG = {
     #you can insert anything you want in attrs attribute
     #it will be given to on_read or on_write function
     "DEVICES" : [
-        {'name' : 'dac1', 'size' : 3, 'attrs' : {'selection' : 0b0, 'last' : b'0'} },
-        {'name' : 'dac2', 'size' : 3, 'attrs' : {'selection' : 0b1, 'last' : b'0'} }
+        {'name' : 'dac1', 'size' : 3, 'attrs' : {'selection' : 0b0, 'last' : b'0\n'} },
+        {'name' : 'dac2', 'size' : 3, 'attrs' : {'selection' : 0b1, 'last' : b'0\n'} }
     ]
 }
 
@@ -28,7 +28,7 @@ def on_read(device, size, offset):
     attrs = device[1]
     last = attrs['last']
 
-    return last.append('\n')
+    return last
 
 
 #Here the dac get's updated
@@ -58,7 +58,6 @@ def on_write(device, value):
 
     #config bits
     sel = attrs['selection']
-    sel = 0
     dc = 0
     ga = 1
     shdn = 1

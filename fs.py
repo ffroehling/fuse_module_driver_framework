@@ -194,7 +194,7 @@ class Abstraction(LoggingMixIn, Operations):
             raise FuseOSError(ENOENT)
             return b''
 
-        result = module_on_write(device, data)
+        result = module.on_write(device, data)
         if result is None:
             raise FuseOSError(EINVAL)
             return len(data)
