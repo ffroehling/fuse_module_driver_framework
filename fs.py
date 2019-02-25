@@ -6,6 +6,7 @@ import logging
 
 from collections import defaultdict
 from errno import ENOENT
+from errno import EINVAL
 from errno import EPERM
 from stat import S_IFDIR, S_IFLNK, S_IFREG
 from time import time
@@ -193,9 +194,12 @@ class Abstraction(LoggingMixIn, Operations):
             raise FuseOSError(ENOENT)
             return b''
 
-        return module.on_write(device, data)
+        result = module_on_write(device, data)
+        if result is None:
+            raise FuseOSError(EINVAL)
+            return len(data)
 
-        return 5
+        return result
 
     #The following methods are not allowed in the filesystem
     def unlink(self, path):
