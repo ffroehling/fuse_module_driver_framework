@@ -14,7 +14,6 @@ runtime_modules = []
 #This function loads all the modules and returns an array with every module
 def load_modules():
     for m in modules.imports:
-        m.module.init()
         runtime_modules.append(m.module)
 
 
@@ -26,6 +25,7 @@ def start(fs):
     load_modules()
 
     for m in runtime_modules:
+        m.init()
         fs.add_module(m)
 
     fs.start()
