@@ -192,9 +192,10 @@ class Abstraction(LoggingMixIn, Operations):
         #Raise error on any failure
         if module is None or device is None:
             raise FuseOSError(ENOENT)
-            return b''
+            return len(value)
 
-        result = module_on_write(device, data)
+        result = module.on_write(device, data)
+
         if result is None:
             raise FuseOSError(EINVAL)
             return len(data)
