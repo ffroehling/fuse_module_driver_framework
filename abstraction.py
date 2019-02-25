@@ -7,8 +7,6 @@ import logging
 from fs import Filesystem
 import subprocess
 
-PID="/tmp/ab.pid"
-var=3
 runtime_modules = []
 
 #This function loads all the modules and returns an array with every module
@@ -38,7 +36,6 @@ def stop(fs):
         m.stop()
 
     fs.stop()
-
 
 if __name__ == "__main__":
     fs = Filesystem("%s" % config.BASEPATH)
