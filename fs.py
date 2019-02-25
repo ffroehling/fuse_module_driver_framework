@@ -10,8 +10,8 @@ from errno import EPERM
 from stat import S_IFDIR, S_IFLNK, S_IFREG
 from time import time
 
-from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
-from pprint import pprint
+from fuse import FUSE, FuseOSError, Operations, LoggingMixIn, fuse_exit
+import subprocess
 
 if not hasattr(__builtins__, 'bytes'):
     bytes = str
@@ -237,14 +237,11 @@ class Filesystem:
         if not self.fuse == None:
             return False
 
-        self.fuse = FUSE(self.mem, self.mount, foreground=True, allow_other=True)
+        self.fuse = FUSE(self.mem, self.mount, foreground=False, allow_other=True)
 
-    #stops fuse
     def stop(self):
-        if self.fuse == None:
-            return False
+        subprocess.run(['umount', self.mount ])
 
-        del self.fuse
 
     #adds a module
     def add_module(self, module):
