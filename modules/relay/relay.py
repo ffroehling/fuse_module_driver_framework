@@ -29,6 +29,10 @@ def init():
         with open("%s/direction" % attrs['path'], "wb") as f:
             f.write(b"%s\n" % attrs['direction'].encode('utf-8'))
 
+        # set everything to zero on default
+        with open("%s/value" % attrs['path'], "wb") as f:
+            f.write(b"%d\n" % 0)
+
 #This function is for starting the logic
 def on_read(device, size, offset):
     attr = device[1]
@@ -46,6 +50,11 @@ def on_write(device, value):
         f.write(value)
 
     return len(value)
+
+def stop():
+    # set everything to zero on default
+    with open("%s/value" % attrs['path'], "wb") as f:
+        f.write(b"%d\n" % 0)
 
 ###END SECTION COMPONENT_MODEL
 

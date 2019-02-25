@@ -19,9 +19,10 @@ CONFIG = {
     ]
 }
 
-#imports and setup SPI
+#init everything -> set everything to zero
 def init():
-    pass
+    for d in CONFIG['DEVICES']:
+        write((d['name'], d['attrs']), 0)
 
 #This function is for starting the logic
 def on_read(device, size, offset):
@@ -90,8 +91,9 @@ def on_write(device, value):
     #return size of data
     return len(value)
 
-#close spi connection
+#shutdown on close
 def stop():
-    pass
+    for d in CONFIG['DEVICES']:
+        write((d['name'], d['attrs']), 0)
 
 ###END SECTION COMPONENT_MODEL
