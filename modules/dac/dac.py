@@ -1,3 +1,5 @@
+import spidev
+
 ###SECTION COMPONENT_MODEL
 #The header section consists of the component model for the runtime enviroment
 #Each module has to have this in the section
@@ -12,32 +14,34 @@ CONFIG = {
     #you can insert anything you want in attrs attribute
     #it will be given to on_read or on_write function
     "DEVICES" : [
-        {'name' : 'dac1', 'size' : 5, 'attrs' : {'selection' : 0b0} },
-        {'name' : 'dac2', 'size' : 5, 'attrs' : {'selection' : 0b1} }
+        {'name' : 'dac1', 'size' : 3, 'attrs' : {'selection' : 0b0, 'last' : b'0'} },
+        {'name' : 'dac2', 'size' : 3, 'attrs' : {'selection' : 0b1, 'last' : b'0'} }
     ]
 }
 
-spi = None
-
 #imports and setup SPI
 def init():
-    import spidev
+    pass
 
+#This function is for starting the logic
+def on_read(device, size, offset):
+    attrs = device[1]
+    last = attrs['last']
+
+    return last.append('\n')
+
+
+#Here the dac get's updated
+def on_write(device, value):
+    #prepare spi device
     spi = spidev.SpiDev()
     spi.open(0,0)
     spi.max_speed_hz = 20000000 #Max frequency is 20MHz
     spi.mode = 0b00 #default mode. 0b11 is also supported, but not needed here
 
-
-#This function is for starting the logic
-def on_read(device, size, offset):
-    return b'0\n'
-
-#Here the dac get's updated
-def on_write(device, value):
-    #first convert to int
     perc = 0
 
+    #convert parameter to int
     try:
         perc = int(value)
     except ValueError:
@@ -73,22 +77,22 @@ def on_write(device, value):
     data = config + perc
 
     #convert to bytes
-    to_write = data.to_bytes(2, byteorder='big')
+    to_write = list(data.to_bytes(2, byteorder='big'))
 
     #write to chip
-    if spi is not None:
-        spi.xfer2(to_write)
+    spi.xfer2(to_write)
 
+    #close spi
+    spi.close()
+
+    #set last element
+    attrs['last'] = value
+
+    #return size of data
     return len(value)
 
 #close spi connection
 def stop():
-    spi.close() 
+    pass
 
 ###END SECTION COMPONENT_MODEL
-
-
-###Logic can come here or somewhere else
-###...
-
-
