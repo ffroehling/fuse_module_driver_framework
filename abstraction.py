@@ -23,17 +23,27 @@ def start(fs):
     load_modules()
 
     for m in runtime_modules:
-        m.init()
-        fs.add_module(m)
+        try:
+            m.init()
+            fs.add_module(m)
+        except Exception as e:
+            #TODO: log exceptoin
+            pass
 
+    #finally start filesystem
     fs.start()
 
 def stop(fs):
     load_modules()
 
     fs = Filesystem(config.BASEPATH)
+
     for m in runtime_modules:
-        m.stop()
+        try:
+            m.stop()
+        except Exception as e:
+            #TODO: log exceptoin
+            pass
 
     fs.stop()
 
