@@ -14,10 +14,7 @@ runtime_modules = []
 #This function loads all the modules and returns an array with every module
 def load_modules():
     for m in modules.imports:
-        #module = Module(m.module)
-        #runtime_modules.append(module)
-        #module.init()
-        #m.module.init()
+        m.module.init()
         runtime_modules.append(m.module)
 
 
@@ -27,17 +24,19 @@ def start(fs):
         os.makedirs(config.BASEPATH)
 
     load_modules()
-    fs = Filesystem(config.BASEPATH)
-    #TODO: Add all modules
-    #fs.add_module(runtime_modules[0])
+
+    for m in runtime_modules:
+        fs.add_module(m)
+
     fs.start()
 
 def stop(fs):
     load_modules()
 
     fs = Filesystem(config.BASEPATH)
-    #TODO: unload all modules
-    runtime_modules[0].stop()
+    for m in runtime_modules:
+        m.stop()
+
     fs.stop()
 
 
@@ -47,6 +46,6 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         #check params
         if sys.argv[1] == "start":
-            fs.start()
+            start(fs)
         elif sys.argv[1] == "stop":
-            fs.stop()
+            stop(fs)
