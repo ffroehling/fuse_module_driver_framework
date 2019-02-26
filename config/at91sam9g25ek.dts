@@ -1,0 +1,212 @@
+/*
+ * at91sam9g25ek.dts - Device Tree file for AT91SAM9G25-EK board
+ *
+ *  Copyright (C) 2012 Atmel,
+ *                2012 Nicolas Ferre <nicolas.ferre@atmel.com>
+ *
+ * Licensed under GPLv2 or later.
+ */
+/dts-v1/;
+#include "at91sam9g25.dtsi"
+#include "at91sam9x5ek.dtsi"
+
+/ {
+	model = "Atmel AT91SAM9G25-EK";
+	compatible = "atmel,at91sam9g25ek", "atmel,at91sam9x5ek", "atmel,at91sam9x5", "atmel,at91sam9";
+
+	ahb {
+		apb {
+			i2c0: i2c@f8010000 {
+					status = "okay";
+                        }; 
+
+			
+			i2c1: i2c@f8014000 {
+				status="okay";
+				ina219@40 {
+                                        compatible = "ti,ina219";
+                                        reg = <0x40>;
+                                        shunt-resistor = <200>;
+                                        status = "okay";
+                                };
+
+			};
+
+			spi0: spi@f0000000 {
+				status = "okay"; /* conflicts with mmc1 */
+				cs-gpios = <&pioA 14 0>, <0>, <0>, <0>;
+				m25p80@0 {
+					compatible = "spidev";
+					spi-max-frequency = <52287500>;
+					reg = <0>;
+				};
+			};
+
+			mmc1: mmc@f000c000 {
+				status = "okay";
+			};
+
+			macb0: ethernet@f802c000 {
+				phy-mode = "rmii";
+				status = "okay";
+			};
+
+			adc0: adc@f804c000 {
+				status = "okay";
+			};
+
+			rtc@fffffeb0 {
+                                status = "okay";
+                        };
+
+			 watchdog@fffffe40 {
+                                status = "okay";
+                        };
+			
+			ssc0: ssc@f0010000 {
+                                status = "disbaled";
+                        };
+	
+			pinctrl@fffff400 {
+				w1_0 {
+					pinctrl_w1_0: w1_0-0 {
+						/* pull up on */
+						atmel,pins = <2 10 0x0 0x1>;
+					};
+				};
+
+				w1_1{
+                                        pinctrl_w1_1: w1_1-0 {
+						/* pull up on */
+                                                atmel,pins = <2 11 0x0 0x1>;
+                                        };
+                                };
+
+				w1_2{
+                                        pinctrl_w1_2: w1_2-0 {
+						/* pull up on */
+                                                atmel,pins = <2 12 0x0 0x1>;
+                                        };
+                                };
+
+				dht11_pins {
+					pinctrl_dht11_pins_1: dht11_pins_1{
+                                                /* pull up on */
+                                		atmel,pins = <2 5 0x0 0x1>;
+                                        };
+                                };
+
+
+				/*adc0 {
+        				pinctrl_adc0_ad0: adc0_ad0 {
+            					atmel,pins = <AT91_PIOB 11 AT91_PERIPH_GPIO AT91_PINCTRL_NONE>;
+        				};
+        				pinctrl_adc0_ad1: adc0_ad1 {
+            					atmel,pins = <AT91_PIOB 12 AT91_PERIPH_GPIO AT91_PINCTRL_NONE>;
+        				};
+        				pinctrl_adc0_ad2: adc0_ad2 {
+            					atmel,pins = <AT91_PIOB 13 AT91_PERIPH_GPIO AT91_PINCTRL_NONE>;
+        				};
+        				pinctrl_adc0_ad3: adc0_ad3 {
+            					atmel,pins = <AT91_PIOB 14 AT91_PERIPH_GPIO AT91_PINCTRL_NONE>;
+        				};
+    				};*/
+
+			};
+
+			/*adc0: adc@f804c000 {
+   				status = "okay";
+    				pinctrl-names = "default";
+    				pinctrl-0 = <&pinctrl_adc0_ad0 &pinctrl_adc0_ad1 &pinctrl_adc0_ad2 &pinctrl_adc0_ad3>;
+    				atmel,adc-channels-used = <0xf>;
+    				atmel,adc-num-channels = <4>;
+    				compatible = "atmel,at91sam9x5-adc";
+    				atmel,adc-startup-time = <40>;
+    				atmel,adc-status-register = <0x1c>;
+    				atmel,adc-trigger-register = <0x08>;
+    				atmel,adc-use-external;
+    				atmel,adc-vref = <3250>;
+    				atmel,adc-res = <8 10>;
+    				atmel,adc-res-names = "lowres", "highres";
+    				atmel,adc-use-res = "highres";
+    		
+			};*/	
+
+		};
+	};
+
+	leds {
+                compatible = "gpio-leds";
+
+                /* little green LED in middle of Aria G25 module */
+                corewind_led {
+                        label = "corewind_led";
+                        gpios = <&pioB 8 GPIO_ACTIVE_HIGH>; /* PB8 */
+                        linux,default-trigger = "heartbeat";
+                };
+
+        };
+
+	gpio_keys {
+                compatible = "gpio-keys";
+                #address-cells = <1>;
+                #size-cells = <0>;
+
+                pb_user1 {
+                        label = "pb_user1";
+                        gpios = <&pioB 12 0>;
+                        linux,code = <0x100>;
+                        gpio-key,wakeup;
+                };
+        };
+
+	onewire@0 {
+		compatible = "w1-gpio";
+		gpios = <&pioC 10 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_w1_0>;
+		};
+
+	onewire@1 {
+                compatible = "w1-gpio";
+                gpios = <&pioC 11 GPIO_ACTIVE_LOW>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&pinctrl_w1_1>;
+		
+        };
+
+	onewire@2 {
+                compatible = "w1-gpio";
+                gpios = <&pioC 12 GPIO_ACTIVE_LOW>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&pinctrl_w1_2>;
+
+        };
+
+	dht11@0 {
+                                compatible = "dht11";
+                                pinctrl-names = "default";
+                                pinctrl-0 = <&pinctrl_dht11_pins_1>;
+                                gpios = <&pioC 5 GPIO_ACTIVE_LOW>;
+                                status = "okay";
+         };
+	
+	/*	dht11@1 {
+                                compatible = "dht11";
+                                pinctrl-names = "default";
+                                pinctrl-0 = <&pinctrl_dht11_pins_2>;
+                                gpios = <&pioC 6 GPIO_ACTIVE_LOW>;
+                                status = "okay";
+         };*/
+
+
+	/*hlw8012@0 {
+		compatible = "hlw8012";
+		pinctrl-names = "default";
+		status = "okay";
+		sel-gpio = <&pioC 29 0>;
+		cf-gpio = <&pioC 31 0>;
+		cf1-gpio = <&pioC 30 0>;
+	};*/
+
+};
