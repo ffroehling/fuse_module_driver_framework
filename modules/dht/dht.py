@@ -27,17 +27,17 @@ def on_read(device, size, offset):
     path = attrs['path']
 
     #read data
-    with open('path', 'r') as f:
+    with open(path, 'r') as f:
         raw = f.read()
 
         #get number of string
-        data = int(raw[-6:])
+        data = int(raw)
 
         #set comma
         data = data / 1000
 
         #make it a float binary string
-        r = ("{:.2f}".format(data)).encode('utf-8')
+        r = ("{:.2f}\n".format(data)).encode('utf-8')
 
         #return it
         return r
