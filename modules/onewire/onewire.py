@@ -51,3 +51,4 @@ def on_write(device, value):
 
 #nothing todo here
 def stop():
+    pass
