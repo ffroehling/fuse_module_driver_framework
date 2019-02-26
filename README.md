@@ -20,6 +20,18 @@ A module is a component which is integrated in the abstraction layer. When the a
 
 A module can implement any reasonable logic. Starting from a simple hello world module, you can write complex applications with several dependencies. Everything happens in userspace, so if there is a missing a dependenciy, you simply install it (instead of compiling and loading new kernel modules).
 
+## Fuse and fusepy
+
+Fuse stands for "Filesystem in Userspace" and is what it says: A virtual filesystem running in userspace where you can control any action done in the filesystem. See references for more information. Fusepy is a python interface implementation for fuse.
+
+# Requirements
+
+The abstraction layer itself only needs fuse and libfuse to be installed natively on the os. Further more the python package "fusepy" is required. 
+
+Make sure that the path to libfuse.so is stored in the environment variable 'FUSE_LIBRARY_PATH'. If this variable is not set, please set it, e.g with 'export FUSE_LIBRARY_PATH=/usr/lib/libfuse.so' or make it permanent, by adding it to your shell environment.
+
+Each module can have it's own dependencies. Check if you need any module and if so, install the required dependencies. There should be a documentation available in every module, which dependencies are required (any maybe how to install them).
+
 # Work todo
 
 # References
