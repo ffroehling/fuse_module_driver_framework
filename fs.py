@@ -8,6 +8,7 @@ from collections import defaultdict
 from errno import ENOENT
 from errno import EINVAL
 from errno import EPERM
+from errno import ENXIO
 from stat import S_IFDIR, S_IFLNK, S_IFREG
 from time import time
 
@@ -141,7 +142,13 @@ class Abstraction(LoggingMixIn, Operations):
             raise FuseOSError(ENOENT)
             return b''
 
-        return module.on_read(device, size, offset)
+        result = module.on_read(device, size, offset)
+
+        if result is None:
+            raise FuseOSError(ENXIO)
+            return b''
+
+        return result
 
     def readdir(self, path, fh):
         l = {}
