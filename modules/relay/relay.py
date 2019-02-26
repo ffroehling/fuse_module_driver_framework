@@ -52,9 +52,16 @@ def on_write(device, value):
     return len(value)
 
 def stop():
-    # set everything to zero on default
-    with open("%s/value" % attrs['path'], "wb") as f:
-        f.write(b"%d\n" % 0)
+    for d in CONFIG['DEVICES']:
+        attrs = d['attrs']
+
+        # set everything to zero on default
+        with open("%s/value" % attrs['path'], "wb") as f:
+            f.write(b"%d\n" % 0)
+
+        #deallocate gpio
+        with open("/sys/class/gpio/unexport", "wb") as f:
+            f.write(b"%d\n" % attrs['allocate'])
 
 ###END SECTION COMPONENT_MODEL
 
