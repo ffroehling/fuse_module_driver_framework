@@ -34,13 +34,13 @@ def on_read(device, size, offset):
             return None
 
         #get number of string
-        temperature = int(data[-6:])
+        temperature = int(raw[-6:])
 
         #set comma
         temperature = temperature / 1000
 
         #make it a float binary string
-        r = ("{:.2f}".format(b)).encode('utf-8')
+        r = ("{:.2f}".format(temperature)).encode('utf-8')
 
         #return it
         return r
