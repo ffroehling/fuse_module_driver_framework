@@ -1,7 +1,6 @@
 from luma.core.interface.serial import i2c, spi
 from luma.core.render import canvas
 from luma.oled.device import ssd1306, ssd1309, ssd1325, ssd1331, sh1106
-import ImageFont
 
 ###SECTION COMPONENT_MODEL
 #The header section consists of the component model for the runtime enviroment
@@ -45,9 +44,9 @@ def on_write(d, value):
     global device
 
     with canvas(device) as draw:
-        #draw.rectangle(device.bounding_box, outline="white", fill="black")
-        font = ImageFont.truetype("arial.ttf", 1)
-        draw.text((30, 40), value.decode(), fill="white", font=font)
+        draw.rectangle(device.bounding_box, outline="white", fill="black")
+        #font = ImageFont.truetype("arial.ttf", 1)
+        draw.text((30, 40), value.decode(), fill="white")
 
     return len(value)
 
