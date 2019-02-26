@@ -22,7 +22,7 @@ CONFIG = {
 #init everything -> set everything to zero
 def init():
     for d in CONFIG['DEVICES']:
-        on_write((d['name'], d['attrs']), 0)
+        on_write((d['name'], d['attrs']), b'0')
 
 #This function is for starting the logic
 def on_read(device, size, offset):
@@ -94,6 +94,6 @@ def on_write(device, value):
 #shutdown on close
 def stop():
     for d in CONFIG['DEVICES']:
-        on_write((d['name'], d['attrs']), 0)
+        on_write((d['name'], d['attrs']), b'0')
 
 ###END SECTION COMPONENT_MODEL
