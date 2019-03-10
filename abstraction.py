@@ -3,9 +3,10 @@ import config
 import modules
 import time
 import sys
+import time
 import logging
+from threading import Thread
 from fs import Filesystem
-import subprocess
 
 runtime_modules = []
 
@@ -14,45 +15,113 @@ def load_modules():
     for m in modules.imports:
         runtime_modules.append(m.module)
 
-
-def start(fs):
-    #First check if folder exists -> if not create
-    if not os.path.exists(config.BASEPATH):
-        os.makedirs(config.BASEPATH)
-
-    load_modules()
-
-    for m in runtime_modules:
+class Listener():
+    def __init__(self, fs):
+        #TODO: Create fifos here
         try:
-            m.init()
-            fs.add_module(m)
-        except Exception as e:
-            #TODO: log exceptoin
-            pass
+            self.fifo_in = os.mkfifo(config.fifo_in_file)
+            self.fifo_out = os.mkfifo(config.fifo_out_file)
+            self.fs = fs
+        except OSError as e:
+            print("Failed to create FIFO: %s" % str(e))
 
-    #finally start filesystem
+    def response(self, value):
+        with open(config.fifo_out_file, 'w') as fo:
+            fo.write(value)
+
+    #reads the device and returns a value
+    def listen(self):
+        active = True
+        while active:
+            with open(config.fifo_in_file, 'r') as fi:
+                #read data
+                rec = fi.read()
+
+                #When quit -> quit
+                if 'kill' in rec:
+                    active = False
+                    break
+                
+                result = self.action(rec)
+                
+                if not result is None:
+                    self.response(result)
+        #stop filesystem
+        self.fs.stop()
+
+        #cleanup
+        os.remove(config.fifo_in_file)
+        os.remove(config.fifo_out_file)
+
+    def action(self, action):
+        return "received: %s" % action
+
+def start_fs(fs):
     fs.start()
 
-def stop(fs):
-    load_modules()
+def listener(fs):
+    listener = Listener(fs)
+    listener.listen()
 
-    fs = Filesystem(config.BASEPATH)
+def fork():
+    try: 
+        pid = os.fork() 
+        if pid > 0:
+            # exit first parent
+            sys.exit(0) 
+    except OSError as e: 
+        sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+        sys.exit(1)
 
-    for m in runtime_modules:
-        try:
-            m.stop()
-        except Exception as e:
-            #TODO: log exceptoin
-            pass
+    # decouple from parent environment
+    os.setsid() 
+    os.umask(0) 
 
-    fs.stop()
+    # do second fork
+    try: 
+        pid = os.fork() 
+        if pid > 0:
+            # exit from second parent
+            sys.exit(0) 
+    except OSError as e: 
+        sys.stderr.write("fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
+        sys.exit(1) 
+
+def nstart():
+    fork()
+
+    fs = Filesystem("%s" % config.BASEPATH)
+
+    #threads
+    t_fs = Thread(target = start_fs, args=(fs,))
+    t_listener = Thread(target = listener, args=(fs,))
+
+    #start
+    t_fs.start()
+    t_listener.start()
+
+    t_fs.join()
+    t_listener.join()
+    
 
 if __name__ == "__main__":
-    fs = Filesystem("%s" % config.BASEPATH)
-        
+    #fs = Filesystem("%s" % config.BASEPATH)
     if len(sys.argv) == 2:
+        #runner = Runner()
         #check params
         if sys.argv[1] == "start":
-            start(fs)
+            nstart()
+
+        elif sys.argv[1] == "status":
+            with open('/tmp/abstractionfifo_in', 'w') as f:
+                f.write('status\n')
+
+                with open('/tmp/abstractionfifo_out', 'r') as f2:
+                    print(f2.read())
+
         elif sys.argv[1] == "stop":
-            stop(fs)
+            with open('/tmp/abstractionfifo_in', 'w') as f:
+                f.write('kill\n')
+
+                with open('/tmp/abstractionfifo_out', 'r') as f2:
+                    print(f2.read())

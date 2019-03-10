@@ -246,14 +246,10 @@ class Filesystem:
 
     #starts mounting the file system in userspace
     def start(self):
-        if not self.fuse == None:
-            return False
-
-        self.fuse = FUSE(self.mem, self.mount, foreground=False, allow_other=True)
+        self.fuse = FUSE(self.mem, self.mount, foreground=True, allow_other=True)
 
     def stop(self):
         subprocess.run(['umount', self.mount ])
-
 
     #adds a module
     def add_module(self, module):
