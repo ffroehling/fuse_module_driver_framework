@@ -28,9 +28,17 @@ Fuse stands for "Filesystem in Userspace" and is what it says: A virtual filesys
 
 The abstraction layer itself only needs fuse and libfuse to be installed natively on the os. Further more the python package "fusepy" is required. 
 
-Make sure that the path to libfuse.so is stored in the environment variable 'FUSE_LIBRARY_PATH'. If this variable is not set, please set it, e.g with 'export FUSE_LIBRARY_PATH=/usr/lib/libfuse.so' or make it permanent, by adding it to your shell environment.
+Make sure that the path to libfuse.so is stored in the environment variable 'FUSE_LIBRARY_PATH'. If this variable is not set, please set it, e.g with 'export FUSE_LIBRARY_PATH=/usr/lib/libfuse.so' or make it permanent, by adding it to your shell environment.  
+
+Also, make sure that the basepath specified in config/config.py exists and is mountable (e.g. no filesystem with nodev mount option like in /tmp and proper permissions).  
 
 Each module can have it's own dependencies. Check if you need any module and if so, install the required dependencies. There should be a documentation available in every module, which dependencies are required (any maybe how to install them).
+
+# Installation
+
+No installation is needed. Just install the requirements. There is a file called setup.py which does install all dependencies. You maybe need to load your .profile file again after invoking the script as this is a different context.
+
+If you want to run the provided modules out of the box (default setting), you might encounter errors as the modules have some dependencies. You either could prevent the import (remove them from modules/__init__.py) or install the required dependencies (look at the module's documentation).
 
 # Implementing a module
 
