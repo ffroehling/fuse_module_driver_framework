@@ -12,7 +12,7 @@ from fs import Filesystem
 #This function loads all the modules and returns an array with every module
 def load_modules():
     runtime_modules = []
-    for m in modules.imports:
+    for m in modules.start:
         runtime_modules.append(m.module)
 
     return runtime_modules
@@ -39,7 +39,7 @@ class Listener():
                 #read data
                 rec = fi.read()
 
-                #When quit -> quit
+                #When kill received -> quit
                 if 'kill' in rec:
                     active = False
                     break
@@ -55,12 +55,54 @@ class Listener():
         os.remove(config.fifo_in_file)
         os.remove(config.fifo_out_file)
 
-    def action(self, action):
+    def unload_module(self, name):
+        (succ, module) = self.fs.unload_module(name)
+
+        if succ:
+            #kill routine
+            module.stop()
+            return "Module successfully unloaded"
+
+        return "No module with name %s loaded" % name
+
+    def load_module(self, name):
+        for module in modules.all_modules:
+            m = module.module
+            if m.CONFIG['NAME'] == name:
+                #init module 
+                m.init()
+
+                #add to filesystem
+                if self.fs.add_module(m):
+                    return "Module successfully loaded"
+                else:
+                    return "Could not load module %s" % name
+
+        return "Could not find module %s in module definition" % name
+
+    def action(self, rec):
+        params = rec.split(" ")
+
+        if not len(params) == 2:
+            return "Invalid number of params received: %d (%s)" % (len(params), rec)
+
+        action = params[0]
+        param = params[1]
+
+        if action == "unload":
+            return self.unload_module(param)
+        elif action == "load":
+            return self.load_module(param)
+
         return "received: %s" % action
 
 def start_fs(fs):
     modules = load_modules()
     for module in modules:
+        #init module
+        module.init()
+
+        #add to file system
         fs.add_module(module)
 
     fs.start()
@@ -111,23 +153,28 @@ def nstart():
     
 
 if __name__ == "__main__":
-    #fs = Filesystem("%s" % config.BASEPATH)
-    if len(sys.argv) == 2:
-        #runner = Runner()
+    if len(sys.argv) >= 2:
+        #remove unneccessary item
+        sys.argv.pop(0)
+
         #check params
-        if sys.argv[1] == "start":
+        if sys.argv[0] == "start":
             nstart()
-
-        elif sys.argv[1] == "status":
-            with open('/tmp/abstractionfifo_in', 'w') as f:
-                f.write('status\n')
-
-                with open('/tmp/abstractionfifo_out', 'r') as f2:
-                    print(f2.read())
-
-        elif sys.argv[1] == "stop":
+        elif sys.argv[0] == "stop":
             with open('/tmp/abstractionfifo_in', 'w') as f:
                 f.write('kill\n')
 
                 with open('/tmp/abstractionfifo_out', 'r') as f2:
                     print(f2.read())
+
+        else:
+            p = " ".join([param for param in sys.argv]).replace('\n', '')
+
+            with open('/tmp/abstractionfifo_in', 'w') as f:
+                f.write('%s' % p)
+
+            with open('/tmp/abstractionfifo_out', 'r') as f2:
+                print(f2.read())
+
+    else:
+        print("TODO: print help here\n")

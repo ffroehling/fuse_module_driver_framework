@@ -37,6 +37,27 @@ class Abstraction(LoggingMixIn, Operations):
         #Add to our list
         self.modules.append(module)
 
+        return True
+
+
+    def remove_module(self, name):
+        for m in self.modules:
+            if name == m.CONFIG['NAME']:
+                #This is the module which is going to be unloaded
+
+                #first remove the files
+                for device in m.CONFIG['DEVICES']:
+                    del self.files["/%s/%s" % (m.CONFIG['FOLDER'], device['name'])]
+                
+                #then remove folder
+                del self.files['/' + m.CONFIG['FOLDER']]
+
+                #then remove from module list
+                self.modules.remove(m)
+                return (True, m)
+
+        return (False, None)
+
     #Adds a folder in the virtual file system
     def add_folder(self, name):
         now = time()
@@ -251,6 +272,9 @@ class Filesystem:
     def stop(self):
         subprocess.run(['umount', self.mount ])
 
+    def unload_module(self, name):
+        return self.mem.remove_module(name)
+
     #adds a module
     def add_module(self, module):
-        self.mem.add_module(module)
+        return self.mem.add_module(module)
