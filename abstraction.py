@@ -187,29 +187,29 @@ if __name__ == "__main__":
         if sys.argv[0] == "start":
             nstart()
         elif sys.argv[0] == "stop":
-            with open('/tmp/abstractionfifo_in', 'w') as f:
+            with open(config.fifo_in_file, 'w') as f:
                 f.write('kill\n')
 
-            with open('/tmp/abstractionfifo_out', 'r') as f2:
+            with open(config.fifo_out_file, 'r') as f2:
                 print(f2.read())
         elif sys.argv[0] == "status":
             if os.path.isfile('/tmp/abstractionstate'): 
                 print("State: Running\n")
 
-                with open('/tmp/abstractionfifo_in', 'w') as f:
+                with open(config.fifo_in_file, 'w') as f:
                     f.write('status')
 
-                with open('/tmp/abstractionfifo_out', 'r') as f2:
+                with open(config.fifo_out_file, 'r') as f2:
                     print(f2.read())
             else:
                 print("State: Not running\n")
         else:
             p = " ".join([param for param in sys.argv]).replace('\n', '')
 
-            with open('/tmp/abstractionfifo_in', 'w') as f:
+            with open(config.fifo_in_file, 'w') as f:
                 f.write('%s' % p)
 
-            with open('/tmp/abstractionfifo_out', 'r') as f2:
+            with open(config.fifo_out_file, 'r') as f2:
                 print(f2.read())
 
     else:
