@@ -51,9 +51,16 @@ class Listener():
         #stop filesystem
         self.fs.stop()
 
+        #reply
+        self.response("Abstraction layer stopped")
+
+        time.sleep(2)
+
         #cleanup
         os.remove(config.fifo_in_file)
         os.remove(config.fifo_out_file)
+        os.remove('/tmp/abstractionstate')
+
 
     def unload_module(self, name):
         (succ, module) = self.fs.unload_module(name)
@@ -80,13 +87,27 @@ class Listener():
 
         return "Could not find module %s in module definition" % name
 
+    def status(self):
+        modules = self.fs.get_loaded_modules()
+
+        response = "Currently loaded modules:\n"
+        for m in modules:
+            response += "\t- %s\n" % m.CONFIG['NAME']
+
+        return response
+
     def action(self, rec):
         params = rec.split(" ")
-
+        action = params[0]
+        
+        #first check single action params
+        if action == "status":
+            return self.status()
+        
+        #filter false params
         if not len(params) == 2:
             return "Invalid number of params received: %d (%s)" % (len(params), rec)
 
-        action = params[0]
         param = params[1]
 
         if action == "unload":
@@ -97,6 +118,10 @@ class Listener():
         return "received: %s" % action
 
 def start_fs(fs):
+    #create a file for indicating running service
+    with open('/tmp/abstractionstate', 'w') as f:
+        f.write('running')
+
     modules = load_modules()
     for module in modules:
         #init module
@@ -106,6 +131,7 @@ def start_fs(fs):
         fs.add_module(module)
 
     fs.start()
+
 
 def listener(fs):
     listener = Listener(fs)
@@ -164,9 +190,19 @@ if __name__ == "__main__":
             with open('/tmp/abstractionfifo_in', 'w') as f:
                 f.write('kill\n')
 
+            with open('/tmp/abstractionfifo_out', 'r') as f2:
+                print(f2.read())
+        elif sys.argv[0] == "status":
+            if os.path.isfile('/tmp/abstractionstate'): 
+                print("State: Running\n")
+
+                with open('/tmp/abstractionfifo_in', 'w') as f:
+                    f.write('status')
+
                 with open('/tmp/abstractionfifo_out', 'r') as f2:
                     print(f2.read())
-
+            else:
+                print("State: Not running\n")
         else:
             p = " ".join([param for param in sys.argv]).replace('\n', '')
 

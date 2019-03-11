@@ -278,3 +278,6 @@ class Filesystem:
     #adds a module
     def add_module(self, module):
         return self.mem.add_module(module)
+
+    def get_loaded_modules(self):
+        return self.mem.modules
