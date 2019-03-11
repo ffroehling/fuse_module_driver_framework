@@ -8,12 +8,14 @@ import logging
 from threading import Thread
 from fs import Filesystem
 
-runtime_modules = []
 
 #This function loads all the modules and returns an array with every module
 def load_modules():
+    runtime_modules = []
     for m in modules.imports:
         runtime_modules.append(m.module)
+
+    return runtime_modules
 
 class Listener():
     def __init__(self, fs):
@@ -57,6 +59,10 @@ class Listener():
         return "received: %s" % action
 
 def start_fs(fs):
+    modules = load_modules()
+    for module in modules:
+        fs.add_module(module)
+
     fs.start()
 
 def listener(fs):
