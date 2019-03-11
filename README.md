@@ -34,8 +34,6 @@ Each module can have it's own dependencies. Check if you need any module and if 
 
 # Implementing a module
 
-## 
-
 ## Structure of each module
 
 Every module is declared in a subfolder under "modules". Each module needs to have a defined structure, which are basicly attributes that need to be implementented.
