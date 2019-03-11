@@ -162,7 +162,8 @@ To make a module loadable simply take following steps:
 The abstraction layer needs three configuration parameters, which are defined in config.py. 
 
 * **BASEPATH:** This is the folder in the root filesystem where the virtual filesystem will be mounted. Each module folder will be created under this path.  
-* **TODO**: Add communication files here.  
+* **abstraction_file_in**: Communication file for the daemon. Just leave it as it is.   
+* **abstraction_file_out**: Communication file for the daemon. Just leave it as it is.   
 
 # Usage:
 
